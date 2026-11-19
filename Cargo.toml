@@ -1,0 +1,43 @@
+[package]
+name = "smart-hub"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.40", features = ["full"] }
+axum = "0.7"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dashmap = "6.1"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+anyhow = "1.0"
+
+# Криптография для расшифровки UDP broadcast пакетов Tuya (порты 6666/6667)
+aes = "0.8"
+ecb = "0.1"
+cipher = { version = "0.4", features = ["block-padding"] }
+md-5 = "0.10"
+
+# Обнаружение устройств eWeLink / Sonoff через mDNS
+mdns-sd = "0.11"
+
+uuid = { version = "1.10", features = ["v4"] }
+
+hmac = "0.12"
+sha2 = "0.10"
+crc32fast = "1.4"
+rand = "0.8"
+bytes = "1.7"
+hex = "0.4"
+
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+qrcode = "0.14"
+base64 = "0.22"
+
+aes-gcm = "0.10"
+
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+chrono = "0.4"

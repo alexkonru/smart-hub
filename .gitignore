@@ -1,0 +1,61 @@
+# =====================================================================
+# 1. СБОРКИ RUST (Бэкенд, VPS-Relay, Tauri Mobile)
+# =====================================================================
+/target/
+/vps-relay/target/
+/mobile-client/target/
+/mobile-client/src-tauri/target/
+**/target/
+**/*.rs.bk
+
+# =====================================================================
+# 2. СЕКРЕТЫ, БАЗЫ ДАННЫХ И КЭШИ УСТРОЙСТВ (НЕ КОММИТИТЬ В GIT!)
+# =====================================================================
+smart_hub.db
+smart_hub.db-shm
+smart_hub.db-wal
+smart_hub.db-journal
+*.db
+*.sqlite
+*.sqlite3
+
+devices_cache.json
+devices_cache_*.json
+
+.env
+*.env
+*.pem
+*.key
+
+# =====================================================================
+# 3. TAURI V2 И ANDROID / GRADLE СБОРКИ
+# =====================================================================
+/mobile-client/src-tauri/gen/schemas/
+/mobile-client/src-tauri/gen/android/
+/mobile-client/src-tauri/gen/android/.gradle/
+/mobile-client/src-tauri/gen/android/build/
+/mobile-client/src-tauri/gen/android/app/build/
+/mobile-client/src-tauri/gen/android/local.properties
+**/local.properties
+**/.gradle/
+**/build/
+
+# Установочные пакеты и ключи подписи Android
+/dist/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.keystore
+*.jks
+
+# =====================================================================
+# 4. СИСТЕМНЫЕ ФАЙЛЫ И IDE
+# =====================================================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*~

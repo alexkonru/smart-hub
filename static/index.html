@@ -1,0 +1,2575 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>SmartHub</title>
+  <style>
+    :root {
+      --bg-main: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-subtle: #f8fafc;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-soft: #eff6ff;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      line-height: 1.45;
+      user-select: none;
+    }
+
+    /* ВЕРХНЯЯ ШАПКА */
+    .navbar {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      padding: 10px 16px;
+    }
+    .nav-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+    .route-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .profile-select {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      outline: none;
+    }
+    .icon-btn {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+    }
+    .icon-btn:active { transform: scale(0.95); }
+
+    /* ОСНОВНОЙ КОНТЕЙНЕР */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 14px 16px 86px;
+    }
+
+    /* ГОРИЗОНТАЛЬНАЯ ЛЕНТА ГРУПП */
+    .groups-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .groups-bar::-webkit-scrollbar { display: none; }
+    .chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 13px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chip.active {
+      background: var(--text-main);
+      color: #ffffff;
+      border-color: var(--text-main);
+    }
+    .chip-add {
+      background: transparent;
+      border: 1px dashed #94a3b8;
+      color: var(--text-muted);
+    }
+
+    /* КОМПАКТНАЯ ПЛИТОЧНАЯ СЕТКА УСТРОЙСТВ */
+    .group-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin: 16px 0 8px 2px;
+    }
+    .group-section-title:first-child { margin-top: 2px; }
+
+    .tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+      gap: 10px;
+    }
+    .dev-tile {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 13px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 102px;
+      cursor: pointer;
+      transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+      position: relative;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    }
+    .dev-tile:active { transform: scale(0.98); }
+    .dev-tile.tile-on {
+      border-color: #bfdbfe;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+    .dev-tile.tile-offline { opacity: 0.65; }
+    .dev-tile.tile-unconfigured {
+      border-color: #fde68a;
+      background: #fffbeb;
+    }
+
+    .tile-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .net-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-lan { background: var(--success); box-shadow: 0 0 0 2px #dcfce7; }
+    .dot-cloud { background: var(--primary); box-shadow: 0 0 0 2px #dbeafe; }
+    .dot-warn { background: var(--warning); }
+    .dot-off { background: #cbd5e1; }
+
+    .pwr-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .pwr-btn.on {
+      background: var(--success);
+      border-color: var(--success);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);
+    }
+
+    .tile-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .tile-meta {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tile-meta.muted {
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 11.5px;
+    }
+
+    /* НИЖНЯЯ НАВИГАЦИЯ */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 45;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    }
+    .nav-tab {
+      flex: 1;
+      max-width: 160px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 4px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .nav-tab.active {
+      color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    /* МОДАЛЬНЫЕ ШТОРКИ (BOTTOM SHEET) */
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 90;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    @media (min-width: 640px) {
+      .sheet-backdrop { align-items: center; padding: 16px; }
+    }
+    .sheet-card {
+      background: var(--bg-card);
+      width: 100%;
+      max-width: 480px;
+      max-height: 88vh;
+      border-radius: 20px 20px 0 0;
+      padding: 18px 18px 24px;
+      overflow-y: auto;
+      box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.15);
+      animation: slideUp 0.18s ease-out;
+    }
+    @media (min-width: 640px) {
+      .sheet-card { border-radius: 16px; }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0.7; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: #cbd5e1;
+      border-radius: 99px;
+      margin: 0 auto 12px;
+    }
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    /* ЭЛЕМЕНТЫ ВНУТРИ ШТОРКИ УСТРОЙСТВА */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .hero-metric {
+      background: var(--bg-subtle);
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .hero-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .hero-val {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-top: 2px;
+    }
+
+    .controls-list {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px 12px;
+      margin-bottom: 12px;
+    }
+    .prop-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13.5px;
+    }
+    .prop-row:last-child { border-bottom: none; }
+    .prop-name { color: #334155; font-weight: 600; }
+    .prop-val { color: var(--text-main); font-weight: 600; }
+
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #cbd5e1; transition: .2s; border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+      background-color: white; transition: .2s; border-radius: 50%;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    input:checked + .slider { background-color: var(--success); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      padding: 2px 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .step-btn {
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .step-btn:active { background: var(--primary); color: #fff; }
+
+    .mode-pills {
+      display: inline-flex;
+      gap: 2px;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 8px;
+    }
+    .mode-pill {
+      background: transparent;
+      color: #475569;
+      border: none;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .mode-pill.active {
+      background: var(--bg-card);
+      color: var(--primary);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    .chart-box {
+      background: var(--bg-subtle);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .chart-box:hover {
+      border-color: #93c5fd;
+      background: #f8fbff;
+    }
+    .chart-title {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    /* ПОЛНОЭКРАННОЕ ОКНО ГРАФИКА С ОСЯМИ И СЕТКОЙ */
+    .fs-chart-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(4px);
+      z-index: 110;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+    .fs-chart-card {
+      background: var(--bg-card);
+      width: 100%;
+      max-width: 820px;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+    }
+    .fs-stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .fs-stat-item {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      text-align: center;
+    }
+    .fs-stat-lbl { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .fs-stat-val { font-size: 15px; font-weight: 800; color: var(--text-main); margin-top: 2px; }
+
+    /* ПРОЧИЕ ВКЛАДКИ И ФОРМЫ */
+    .panel-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: 1px solid var(--primary);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-ghost {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+    .btn-danger {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    input, select {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13.5px;
+    }
+
+    .cameras-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+    .cam-viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #0f172a;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cam-viewport img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cam-placeholder { color: #94a3b8; font-size: 12.5px; text-align: center; padding: 14px; }
+    .cam-overlay-bar {
+      position: absolute; left: 8px; right: 8px; bottom: 8px;
+      display: flex; justify-content: space-between; pointer-events: none;
+    }
+    .cam-pill {
+      background: rgba(15, 23, 42, 0.75); color: #fff;
+      font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 6px;
+    }
+    .motion-bbox {
+      position: absolute; border: 2px solid #ef4444; background: rgba(239, 68, 68, 0.15);
+      border-radius: 4px; pointer-events: none;
+    }
+
+    .net-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .net-card {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .rule-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    #toast-box {
+      position: fixed;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 130;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+    }
+    .toast {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 999px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      font-size: 12.5px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <div class="brand">
+        <span>SmartHub</span>
+        <span class="route-pill" id="route-indicator">LAN</span>
+      </div>
+
+      <div class="header-controls">
+        <select id="profile-select" class="profile-select" onchange="onProfileSelectChange(this.value)"></select>
+        <button class="icon-btn" title="Профили и группы" onclick="openProfilesModal()">⚙️</button>
+        <button class="icon-btn" title="Сканировать сеть" onclick="scanLanNow()">🔎</button>
+        <button class="icon-btn" title="Обновить" onclick="loadAllData(true)">🔄</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ВКЛАДКА 1: КОМПАКТНАЯ СЕТКА УСТРОЙСТВ И ГРУПП -->
+    <section id="tab-dashboard">
+      <div class="groups-bar" id="groups-bar"></div>
+      <div id="devices-container"></div>
+    </section>
+
+    <!-- ВКЛАДКА 2: АВТОМАТИКА -->
+    <section id="tab-automations" class="hidden">
+      <details class="panel-box">
+        <summary style="cursor:pointer; font-weight:700; font-size:14px; color:var(--primary);">
+          + Создать правило автоматизации
+        </summary>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-top:12px;">
+          <input type="text" id="rule-name" placeholder="Название правила" />
+          <select id="rule-type" onchange="onRuleTypeChange()">
+            <option value="threshold">По показанию датчика</option>
+            <option value="schedule">По расписанию</option>
+          </select>
+          <div id="box-trigger-dev">
+            <select id="rule-trig-dev" style="width:100%;"></select>
+          </div>
+          <div id="box-trigger-metric" style="display:flex; gap:4px;">
+            <select id="rule-trig-metric" style="width:55%;">
+              <option value="temp_current">Температура (°C)</option>
+              <option value="floor_temp">Темп. пола (°C)</option>
+              <option value="humidity_value">Влажность (%)</option>
+              <option value="cur_power">Мощность (Вт)</option>
+              <option value="motion_score">Движение (%)</option>
+            </select>
+            <select id="rule-op" style="width:22%;">
+              <option value="lt">&lt;</option>
+              <option value="gt">&gt;</option>
+            </select>
+            <input type="number" step="0.5" id="rule-thresh" value="18.0" style="width:23%; padding:6px;" />
+          </div>
+          <div id="box-schedule-time" class="hidden">
+            <input type="time" id="rule-time" value="23:00" style="width:100%;" />
+          </div>
+          <select id="rule-act-dev"></select>
+          <div style="display:flex; gap:4px;">
+            <select id="rule-act-code" style="width:55%;">
+              <option value="switch_1">Реле (Вкл/Выкл)</option>
+              <option value="switch">Питание (Вкл/Выкл)</option>
+              <option value="temp_set">Уставка (°C)</option>
+            </select>
+            <input type="text" id="rule-act-val" value="true" placeholder="true / false / 24" style="width:45%;" />
+          </div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:8px;">
+          <button class="btn" onclick="saveCustomRule()">Сохранить</button>
+          <button class="btn btn-ghost" onclick="testActionOnce()">Проверить</button>
+        </div>
+      </details>
+
+      <div id="rules-list"></div>
+      <div class="panel-box" id="auto-logs-box" style="font-size:12.5px; color:var(--text-muted); margin-top:12px;">
+        Журнал срабатываний пуст
+      </div>
+    </section>
+
+    <!-- ВКЛАДКА 3: КАМЕРЫ -->
+    <section id="tab-cameras" class="hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px;">
+        <button class="btn btn-ghost" onclick="refreshAllCameras()">Обновить кадры</button>
+        <button class="btn" onclick="document.getElementById('add-cam-box').classList.toggle('hidden')">+ Добавить камеру</button>
+      </div>
+
+      <div id="add-cam-box" class="panel-box hidden">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:8px;">
+          <input type="text" id="add-cam-ip" placeholder="IP-адрес" />
+          <input type="text" id="add-cam-name" placeholder="Название" />
+          <select id="add-cam-preset">
+            <option value="ipw_onvif">ONVIF / RTSP</option>
+            <option value="icsee">iCSee / XMEye</option>
+            <option value="v380">V380</option>
+            <option value="tapo_dahua">Tapo / Dahua</option>
+            <option value="custom">Свой URL</option>
+          </select>
+          <input type="text" id="add-cam-user" value="admin" placeholder="Логин" />
+          <input type="password" id="add-cam-pass" placeholder="Пароль" />
+          <button class="btn" onclick="addCameraManually()">Добавить</button>
+        </div>
+      </div>
+
+      <div class="cameras-grid" id="cameras-grid"></div>
+    </section>
+
+    <!-- ВКЛАДКА 4: СЕТЬ И НАСТРОЙКИ -->
+    <section id="tab-guide" class="hidden">
+      <div class="panel-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700; font-size:14px;">Состояние сети</span>
+          <span style="font-size:12px; color:var(--text-muted);" id="hub-id-badge"></span>
+        </div>
+        <div class="net-grid" id="remote-net-summary"></div>
+
+        <details style="margin-top:12px;">
+          <summary style="cursor:pointer; font-size:12.5px; color:var(--primary); font-weight:600;">
+            Настройки VPS и пароля доступа
+          </summary>
+          <div style="margin-top:10px; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:8px;">
+            <input type="text" id="rem-vps-url" placeholder="Адрес VPS" />
+            <input type="password" id="rem-vps-secret" placeholder="Ключ RELAY_SECRET" />
+            <input type="password" id="rem-password" placeholder="Пароль входа" />
+            <button class="btn" onclick="saveRemoteConfig()">Сохранить</button>
+          </div>
+        </details>
+      </div>
+
+      <div class="panel-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700; font-size:14px;">Tuya OpenAPI</span>
+          <span id="cloud-keys-status-box" style="font-size:12.5px;"></span>
+        </div>
+        <details style="margin-top:8px;">
+          <summary style="cursor:pointer; font-size:12.5px; color:var(--primary); font-weight:600;">Изменить ключи</summary>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+            <select id="region">
+              <option value="eu">EU</option>
+              <option value="we">WE</option>
+              <option value="cn">CN</option>
+              <option value="us">US</option>
+            </select>
+            <input type="text" id="access_id" placeholder="Access ID" style="flex:1; min-width:160px;" />
+            <input type="password" id="access_secret" placeholder="Access Secret" style="flex:1; min-width:160px;" />
+            <button class="btn" onclick="syncOpenApi()">Синхронизировать</button>
+          </div>
+          <div id="sync-status" style="margin-top:8px; font-size:13px;"></div>
+        </details>
+      </div>
+
+      <div class="panel-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700; font-size:14px;">eWeLink</span>
+          <span id="ewelink-status-box" style="font-size:12.5px;"></span>
+        </div>
+        <details style="margin-top:8px;">
+          <summary style="cursor:pointer; font-size:12.5px; color:var(--primary); font-weight:600;">Подключить аккаунт</summary>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+            <select id="ew_region">
+              <option value="eu">EU</option>
+              <option value="as">AS</option>
+              <option value="us">US</option>
+              <option value="cn">CN</option>
+            </select>
+            <input type="text" id="ew_login" placeholder="Email или телефон" style="flex:1; min-width:160px;" />
+            <input type="password" id="ew_pass" placeholder="Пароль" style="flex:1; min-width:140px;" />
+            <button class="btn" onclick="syncEwelink()">Подключить</button>
+          </div>
+          <div id="ew-sync-status" style="margin-top:8px; font-size:13px;"></div>
+        </details>
+      </div>
+
+      <div class="panel-box">
+        <div style="font-weight:700; font-size:14px; color:var(--danger); margin-bottom:8px;">Сброс данных</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-ghost" onclick="resetDb('telemetry')">Очистить графики</button>
+          <button class="btn btn-danger" onclick="resetDb('devices')">Сбросить профиль</button>
+          <button class="btn btn-danger" onclick="resetDb('all')">Полный сброс БД</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" id="tabbtn-dashboard" onclick="switchTab('dashboard')">
+      <span>Устройства</span>
+    </button>
+    <button class="nav-tab" id="tabbtn-automations" onclick="switchTab('automations')">
+      <span>Автоматика (<span id="rules-count">0</span>)</span>
+    </button>
+    <button class="nav-tab" id="tabbtn-cameras" onclick="switchTab('cameras')">
+      <span>Камеры (<span id="cameras-count">0</span>)</span>
+    </button>
+    <button class="nav-tab" id="tabbtn-guide" onclick="switchTab('guide')">
+      <span>Сеть</span>
+    </button>
+  </nav>
+
+  <!-- ШТОРКА ДЕТАЛЕЙ УСТРОЙСТВА -->
+  <div id="device-sheet" class="sheet-backdrop hidden" onclick="if(event.target===this) closeDeviceSheet()">
+    <div class="sheet-card" id="device-sheet-content"></div>
+  </div>
+
+  <!-- ПОЛНОЭКРАННЫЙ ГРАФИК С СЕТКОЙ И ОСЯМИ -->
+  <div id="fullscreen-chart-modal" class="fs-chart-backdrop hidden" onclick="if(event.target===this) closeFullscreenChart()">
+    <div class="fs-chart-card" id="fullscreen-chart-content"></div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: ПРОФИЛИ И ГРУППЫ -->
+  <div id="profiles-modal" class="sheet-backdrop hidden" onclick="if(event.target===this) closeProfilesModal()">
+    <div class="sheet-card">
+      <div class="sheet-handle"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="margin:0; font-size:16px;">Профили и группы</h3>
+        <button class="icon-btn" onclick="closeProfilesModal()">✕</button>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:6px;">ПРОФИЛИ:</div>
+      <div id="modal-profiles-list" style="margin-bottom:12px;"></div>
+      <div style="display:flex; gap:6px; margin-bottom:18px;">
+        <input type="text" id="new-prof-id" placeholder="ID (латиницей)" style="width:120px;" />
+        <input type="text" id="new-prof-name" placeholder="Название профиля" style="flex:1;" />
+        <button class="btn" onclick="createNewProfile()">+</button>
+      </div>
+
+      <div style="border-top:1px solid var(--border); padding-top:12px;">
+        <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:6px;">ГРУППЫ ТЕКУЩЕГО ПРОФИЛЯ:</div>
+        <div id="modal-groups-list" style="margin-bottom:10px;"></div>
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="new-group-name" placeholder="Новая группа" style="flex:1;" />
+          <button class="btn" onclick="createNewGroupFromModal()">Создать</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: АВТОРИЗАЦИЯ -->
+  <div id="auth-modal" class="sheet-backdrop hidden">
+    <div class="sheet-card" style="max-width:340px; text-align:center; border-radius:16px; margin:auto;">
+      <h3 style="margin-top:0;">Вход</h3>
+      <input type="password" id="login-pwd-input" placeholder="Пароль" style="width:100%; margin-bottom:10px; text-align:center;" />
+      <button class="btn" style="width:100%;" onclick="submitLogin()">Войти</button>
+    </div>
+  </div>
+
+  <div id="toast-box"></div>
+
+  <script>
+    const IS_TAURI = Boolean(window.__TAURI__ && window.__TAURI__.core);
+    let API_BASE = '';
+    let authToken = localStorage.getItem('smarthub_token') || '';
+
+    let allDevices = [];
+    let historyCache = {};
+    let cameraSnapshotsCache = {};
+    let showMotionEventView = {};
+    let automationsData = { rules: [], logs: [] };
+    let profilesData = { active: 'home', profiles: [], diagnostics: {}, network: {} };
+    let remoteConfigData = null;
+
+    let currentGroupFilter = 'all';
+    let currentTab = 'dashboard';
+    let activeDeviceId = null;
+    let fsChartState = null; // { deviceId, metricKey }
+    let isInteracting = false;
+
+    const CAMERA_PRESET_NAMES = {
+      'ipw_onvif': 'ONVIF / RTSP',
+      'icsee': 'iCSee / XMEye',
+      'v380': 'V380',
+      'tapo_dahua': 'Tapo / Dahua',
+      'custom': 'RTSP'
+    };
+
+    const CODE_LABELS = {
+      'switch': 'Питание обогрева',
+      'switch_1': 'Питание',
+      'switch_2': 'Питание (Канал 2)',
+      'backlight_switch': 'Подсветка кнопки',
+      'switch_backlight': 'Подсветка кнопки',
+      'temp_set': 'Целевая температура',
+      'mode': 'Режим работы',
+      'valve_state': 'Состояние нагрева',
+      'work_state': 'Состояние нагрева',
+      'sensor_choose': 'Активный датчик',
+      'child_lock': 'Защита от детей',
+      'freeze_free': 'Антизамерзание',
+      'frost': 'Антизамерзание',
+      'upper_temp': 'Лимит нагрева пола',
+      'temp_differ_on': 'Гистерезис',
+      'relay_status': 'После сбоя питания',
+      'cur_current': 'Сила тока',
+      'add_ele': 'Счетчик энергии',
+      'battery_state': 'Батарея'
+    };
+
+    const HIDDEN_CODES = new Set([
+      'schedule', 'factory_reset', 'temp_correction', 'fault', 'schedule_type', 'programming_mode',
+      'backlight', 'backlight_enum', 'hysteresis', 'lower_temp', 'switch_type',
+      'test_bit', 'countdown_1', 'countdown_2', 'switch_inching', 'cycle_time', 'random_time',
+      'voltage_coe', 'electric_coe', 'power_coe', 'electricity_coe', 'light_mode', 'overcharge_switch',
+      'dp_7', 'dp_15', 'dp_17', 'dp_18', 'dp_19', 'dp_20', 'dp_24', 'dp_25', 'dp_26', 'dp_27', 'dp_28', 'dp_47', 'dp_50', 'dp_108'
+    ]);
+
+    // ========================================================================
+    // ПОЛЬЗОВАТЕЛЬСКИЕ ГРУППЫ
+    // ========================================================================
+
+    function getProfileGroups() {
+      const prof = profilesData.active || 'home';
+      try {
+        return JSON.parse(localStorage.getItem(`smarthub_groups_${prof}`) || '[]');
+      } catch (_) { return []; }
+    }
+
+    function saveProfileGroups(list) {
+      const prof = profilesData.active || 'home';
+      localStorage.setItem(`smarthub_groups_${prof}`, JSON.stringify(list));
+    }
+
+    function getDeviceGroupMap() {
+      const prof = profilesData.active || 'home';
+      try {
+        return JSON.parse(localStorage.getItem(`smarthub_dev_group_${prof}`) || '{}');
+      } catch (_) { return {}; }
+    }
+
+    function setDeviceGroup(deviceId, groupName) {
+      const prof = profilesData.active || 'home';
+      const map = getDeviceGroupMap();
+      if (!groupName) {
+        delete map[deviceId];
+      } else {
+        map[deviceId] = groupName;
+        const groups = getProfileGroups();
+        if (!groups.includes(groupName)) {
+          groups.push(groupName);
+          saveProfileGroups(groups);
+        }
+      }
+      localStorage.setItem(`smarthub_dev_group_${prof}`, JSON.stringify(map));
+      renderAll();
+      if (activeDeviceId === deviceId) renderDeviceSheetContent();
+    }
+
+    function getDeviceGroup(d) {
+      const map = getDeviceGroupMap();
+      return map[d.device_id] || '';
+    }
+
+    function promptCreateGroup() {
+      const name = prompt('Название новой группы:');
+      if (!name || !name.trim()) return;
+      const clean = name.trim();
+      const groups = getProfileGroups();
+      if (!groups.includes(clean)) {
+        groups.push(clean);
+        saveProfileGroups(groups);
+      }
+      currentGroupFilter = `group:${clean}`;
+      renderAll();
+    }
+
+    function createNewGroupFromModal() {
+      const inp = document.getElementById('new-group-name');
+      const clean = inp ? inp.value.trim() : '';
+      if (!clean) return;
+      const groups = getProfileGroups();
+      if (!groups.includes(clean)) {
+        groups.push(clean);
+        saveProfileGroups(groups);
+      }
+      inp.value = '';
+      renderProfilesModalList();
+      renderAll();
+    }
+
+    function deleteGroup(groupName) {
+      const groups = getProfileGroups().filter(g => g !== groupName);
+      saveProfileGroups(groups);
+      const map = getDeviceGroupMap();
+      Object.keys(map).forEach(k => {
+        if (map[k] === groupName) delete map[k];
+      });
+      const prof = profilesData.active || 'home';
+      localStorage.setItem(`smarthub_dev_group_${prof}`, JSON.stringify(map));
+      if (currentGroupFilter === `group:${groupName}`) currentGroupFilter = 'all';
+      renderProfilesModalList();
+      renderAll();
+    }
+
+    // ========================================================================
+    // СЕТЕВОЙ СЛОЙ
+    // ========================================================================
+
+    function isDeviceKeyValid(d) {
+      if (!d.local_key) return false;
+      if (d.vendor === 'EWeLink' || (d.version && String(d.version).startsWith('eWeLink'))) {
+        return d.local_key.length > 0;
+      }
+      return d.local_key.length === 16;
+    }
+
+    async function refreshTauriRouteBadge() {
+      if (!IS_TAURI) return;
+      try {
+        const route = await window.__TAURI__.core.invoke('get_client_route');
+        if (route.mode === 'LAN') updateRouteIndicator('LAN', '#dcfce7', '#15803d');
+        else if (route.mode === 'P2P') updateRouteIndicator('P2P', '#fef3c7', '#b45309');
+        else updateRouteIndicator('VPS', '#dbeafe', '#1d4ed8');
+      } catch (_) {}
+    }
+
+    async function probeOptimalRoute(knownLocalEndpoint, expectedHubId) {
+      const currentHost = window.location.host;
+      if (!knownLocalEndpoint || currentHost === knownLocalEndpoint || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+        API_BASE = '';
+        updateRouteIndicator('LAN', '#dcfce7', '#15803d');
+        return;
+      }
+      if (window.location.protocol === 'http:') {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 450);
+          const resp = await fetch(`http://${knownLocalEndpoint}/api/ping`, { signal: controller.signal });
+          clearTimeout(timer);
+          const data = await resp.json();
+          if (data && data.hub_id === expectedHubId) {
+            API_BASE = `http://${knownLocalEndpoint}`;
+            updateRouteIndicator('Wi-Fi', '#dcfce7', '#15803d');
+            return;
+          }
+        } catch (_) {}
+      }
+      API_BASE = '';
+      updateRouteIndicator('VPS', '#dbeafe', '#1d4ed8');
+    }
+
+    function updateRouteIndicator(text, bg, color) {
+      const el = document.getElementById('route-indicator');
+      if (el) {
+        el.innerText = text;
+        el.style.background = bg;
+        el.style.color = color;
+      }
+    }
+
+    async function safeFetchJson(url, options = {}) {
+      if (IS_TAURI) {
+        const method = (options.method || 'GET').toUpperCase();
+        const body = options.body ? JSON.parse(options.body) : null;
+        try {
+          const res = await window.__TAURI__.core.invoke('hub_request', {
+            args: { method, path: url, auth: authToken || '', body }
+          });
+          await refreshTauriRouteBadge();
+          return res;
+        } catch (err) {
+          if (String(err).includes('401')) {
+            document.getElementById('auth-modal').classList.remove('hidden');
+          }
+          throw new Error(err);
+        }
+      }
+
+      const headers = Object.assign({}, options.headers || {});
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+      const fullUrl = url.startsWith('http') ? url : (API_BASE + url);
+      const response = await fetch(fullUrl, Object.assign({}, options, { headers }));
+
+      if (response.status === 401) {
+        document.getElementById('auth-modal').classList.remove('hidden');
+        throw new Error('Требуется авторизация');
+      }
+
+      const text = await response.text();
+      if (!text) throw new Error(`HTTP ${response.status}`);
+      return JSON.parse(text);
+    }
+
+    async function submitLogin() {
+      const password = document.getElementById('login-pwd-input').value.trim();
+      try {
+        const res = await safeFetchJson('/api/auth/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ password })
+        });
+        if (res.ok && res.token) {
+          authToken = res.token;
+          localStorage.setItem('smarthub_token', authToken);
+          document.getElementById('auth-modal').classList.add('hidden');
+          await loadAllData(false);
+        } else {
+          showToast('Неверный пароль');
+        }
+      } catch (_) {
+        showToast('Ошибка входа');
+      }
+    }
+
+    function showToast(text) {
+      const box = document.getElementById('toast-box');
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.innerText = text;
+      box.appendChild(el);
+      setTimeout(() => el.remove(), 2400);
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      ['dashboard', 'automations', 'cameras', 'guide'].forEach(t => {
+        document.getElementById('tab-' + t).classList.add('hidden');
+        document.getElementById('tabbtn-' + t).classList.remove('active');
+      });
+      document.getElementById('tab-' + tab).classList.remove('hidden');
+      document.getElementById('tabbtn-' + tab).classList.add('active');
+      if (tab === 'guide') loadRemoteConfigUi();
+      if (tab === 'cameras') {
+        renderCamerasTab();
+        refreshAllCameras(false);
+      }
+    }
+
+    // ========================================================================
+    // КОМПАКТНЫЕ ПЛИТКИ ГЛАВНОГО ЭКРАНА
+    // ========================================================================
+
+    function getPrimarySwitchItem(d) {
+      const items = Array.isArray(d.status) ? d.status : [];
+      return items.find(i => (i.code === 'switch' || i.code === 'switch_1' || i.dp_id === 1) && typeof i.value === 'boolean')
+          || items.find(i => typeof i.value === 'boolean' && !i.code.includes('backlight') && !i.code.includes('lock') && !i.code.includes('frost'));
+    }
+
+    function getTilePrimaryMetricText(d) {
+      if (!isDeviceKeyValid(d)) return 'Требуется ключ';
+      const items = Array.isArray(d.status) ? d.status : [];
+      if (items.length === 0) return d.online || d.ip ? 'В сети' : 'Не в сети';
+
+      if (d.category === 'wk') {
+        const floor = items.find(i => i.code === 'temp_floor' || i.code === 'floor_temp' || i.dp_id === 101);
+        const set = items.find(i => i.code === 'temp_set' || i.dp_id === 16);
+        if (floor) {
+          const fVal = (floor.value / 10).toFixed(1);
+          const sVal = set ? ((set.value > 50 ? set.value / 10 : set.value).toFixed(0)) : null;
+          return sVal ? `${fVal} °C (цель ${sVal}°)` : `${fVal} °C`;
+        }
+      }
+
+      const tempItem = items.find(i => i.code === 'temp_current' || i.code === 'va_temperature' || i.dp_id === 102);
+      const humItem = items.find(i => i.code === 'humidity_value' || i.code === 'va_humidity' || i.dp_id === 103);
+      if (tempItem && typeof tempItem.value === 'number') {
+        const t = tempItem.value > 55 ? (tempItem.value / 10).toFixed(1) : tempItem.value.toFixed(1);
+        const h = humItem && typeof humItem.value === 'number'
+          ? (humItem.value > 100 ? (humItem.value / 10).toFixed(0) : humItem.value.toFixed(0))
+          : null;
+        return h ? `${t} °C • ${h}%` : `${t} °C`;
+      }
+
+      const pwrItem = items.find(i => i.code === 'cur_power' || i.dp_id === 23);
+      if (pwrItem && typeof pwrItem.value === 'number' && pwrItem.value > 0) {
+        return `${(pwrItem.value / 10).toFixed(1)} Вт`;
+      }
+
+      const sw = getPrimarySwitchItem(d);
+      if (sw) return sw.value ? 'Включено' : 'Выключено';
+
+      return d.online || d.ip ? 'В сети' : 'Не в сети';
+    }
+
+    function toggleTilePower(event, deviceId) {
+      event.stopPropagation();
+      const d = allDevices.find(x => x.device_id === deviceId);
+      if (!d) return;
+      const sw = getPrimarySwitchItem(d);
+      if (!sw) {
+        openDeviceSheet(deviceId);
+        return;
+      }
+      sendCommand(deviceId, sw.code, sw.dp_id || 1, !sw.value);
+    }
+
+    function buildCompactTileHtml(d) {
+      const hasKey = isDeviceKeyValid(d);
+      const sw = getPrimarySwitchItem(d);
+      const isOn = Boolean(sw && sw.value);
+      const isOnline = Boolean(d.ip || d.online);
+
+      let dotClass = 'dot-off';
+      let netText = 'Офлайн';
+      if (!hasKey) {
+        dotClass = 'dot-warn';
+        netText = d.ip || 'Ключ';
+      } else if (d.ip) {
+        dotClass = 'dot-lan';
+        netText = 'LAN';
+      } else if (d.online) {
+        dotClass = 'dot-cloud';
+        netText = 'Облако';
+      }
+
+      const tileClasses = [
+        'dev-tile',
+        isOn ? 'tile-on' : '',
+        (!isOnline && hasKey) ? 'tile-offline' : '',
+        !hasKey ? 'tile-unconfigured' : ''
+      ].filter(Boolean).join(' ');
+
+      const pwrBtnHtml = (hasKey && sw) ? `
+        <button class="pwr-btn ${isOn ? 'on' : ''}" onclick="toggleTilePower(event, '${d.device_id}')" title="Вкл / Выкл">
+          ⏻
+        </button>
+      ` : '';
+
+      const metricText = getTilePrimaryMetricText(d);
+      const isMutedMetric = metricText === 'Выключено' || metricText === 'Не в сети' || metricText === 'В сети';
+
+      return `
+        <div class="${tileClasses}" onclick="openDeviceSheet('${d.device_id}')">
+          <div class="tile-top">
+            <div class="net-status">
+              <span class="status-dot ${dotClass}"></span>
+              <span>${netText}</span>
+            </div>
+            ${pwrBtnHtml}
+          </div>
+          <div>
+            <div class="tile-name">${d.name || d.device_id}</div>
+            <div class="tile-meta ${isMutedMetric ? 'muted' : ''}">${metricText}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function setGroupFilter(filter) {
+      currentGroupFilter = filter;
+      renderAll();
+    }
+
+    function renderDashboardGroupsAndTiles() {
+      const smartDevs = allDevices.filter(d => !String(d.vendor).startsWith('Camera'));
+      const customGroups = getProfileGroups();
+      const unconfiguredCount = smartDevs.filter(d => !isDeviceKeyValid(d)).length;
+
+      const bar = document.getElementById('groups-bar');
+      const chips = [
+        { id: 'all', label: `Все (${smartDevs.length})` },
+        ...customGroups.map(g => ({ id: `group:${g}`, label: g })),
+        { id: 'climate', label: 'Климат' },
+        { id: 'switch', label: 'Реле' }
+      ];
+      if (unconfiguredCount > 0) {
+        chips.push({ id: 'unconfigured', label: `Без ключа (${unconfiguredCount})` });
+      }
+
+      bar.innerHTML = chips.map(c => `
+        <button class="chip ${currentGroupFilter === c.id ? 'active' : ''}" onclick="setGroupFilter('${c.id}')">
+          ${c.label}
+        </button>
+      `).join('') + `<button class="chip chip-add" onclick="promptCreateGroup()">+ Группа</button>`;
+
+      const container = document.getElementById('devices-container');
+      if (smartDevs.length === 0) {
+        container.innerHTML = `
+          <div class="panel-box" style="text-align:center; color:var(--text-muted); padding:28px 16px;">
+            Нет устройств. Нажмите 🔎 в верхнем углу для поиска в сети.
+          </div>`;
+        return;
+      }
+
+      if (currentGroupFilter === 'all' && customGroups.length > 0) {
+        let html = '';
+        for (const gName of customGroups) {
+          const inGroup = smartDevs.filter(d => getDeviceGroup(d) === gName);
+          if (inGroup.length > 0) {
+            html += `<div class="group-section-title">${gName}</div>`;
+            html += `<div class="tiles-grid">${inGroup.map(buildCompactTileHtml).join('')}</div>`;
+          }
+        }
+        const ungrouped = smartDevs.filter(d => !getDeviceGroup(d) || !customGroups.includes(getDeviceGroup(d)));
+        if (ungrouped.length > 0) {
+          html += `<div class="group-section-title">${customGroups.length > 0 ? 'Вне групп' : ''}</div>`;
+          html += `<div class="tiles-grid">${ungrouped.map(buildCompactTileHtml).join('')}</div>`;
+        }
+        container.innerHTML = html;
+        return;
+      }
+
+      const filtered = smartDevs.filter(d => {
+        if (currentGroupFilter === 'all') return true;
+        if (currentGroupFilter === 'unconfigured') return !isDeviceKeyValid(d);
+        if (currentGroupFilter.startsWith('group:')) {
+          const target = currentGroupFilter.slice(6);
+          return getDeviceGroup(d) === target;
+        }
+        const cat = (d.category || '').toLowerCase();
+        if (currentGroupFilter === 'climate') return cat === 'wk' || cat === 'wsdcg' || cat === 'tdq';
+        if (currentGroupFilter === 'switch') return cat === 'kg' || cat === 'cz';
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="panel-box" style="text-align:center; color:var(--text-muted);">В этой группе нет устройств</div>`;
+      } else {
+        container.innerHTML = `<div class="tiles-grid">${filtered.map(buildCompactTileHtml).join('')}</div>`;
+      }
+    }
+
+    // ========================================================================
+    // ПОЛНОЭКРАННЫЙ ГРАФИК С СЕТКОЙ И ОСЯМИ
+    // ========================================================================
+
+    function openFullscreenChart(deviceId, metricKey) {
+      fsChartState = { deviceId, metricKey };
+      document.getElementById('fullscreen-chart-modal').classList.remove('hidden');
+      renderFullscreenChartModal();
+    }
+
+    function closeFullscreenChart() {
+      fsChartState = null;
+      document.getElementById('fullscreen-chart-modal').classList.add('hidden');
+    }
+
+    function formatTimeHhMm(tsSec) {
+      if (!tsSec) return '';
+      const dt = new Date(tsSec * 1000);
+      const hh = String(dt.getHours()).padStart(2, '0');
+      const mm = String(dt.getMinutes()).padStart(2, '0');
+      return `${hh}:${mm}`;
+    }
+
+    function renderFullscreenChartModal() {
+      if (!fsChartState) return;
+      const { deviceId, metricKey } = fsChartState;
+      const d = allDevices.find(x => x.device_id === deviceId);
+      const h = historyCache[deviceId] || {};
+
+      const seriesMeta = {
+        'floor_temp': { label: 'Температура пола', unit: '°C', color: '#2563eb' },
+        'air_temp':   { label: 'Температура воздуха', unit: '°C', color: '#0284c7' },
+        'temp':       { label: 'Температура', unit: '°C', color: '#2563eb' },
+        'power_w':    { label: 'Активная мощность', unit: ' Вт', color: '#16a34a' }
+      };
+
+      const availableKeys = Object.keys(seriesMeta).filter(k => Array.isArray(h[k]) && h[k].length > 0);
+      const activeKey = availableKeys.includes(metricKey) ? metricKey : (availableKeys[0] || metricKey);
+      const meta = seriesMeta[activeKey] || { label: 'График', unit: '', color: '#2563eb' };
+      const points = h[activeKey] || [];
+
+      const box = document.getElementById('fullscreen-chart-content');
+      if (points.length === 0) {
+        box.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="margin:0;">${d ? (d.name || d.device_id) : 'График'}</h3>
+            <button class="icon-btn" onclick="closeFullscreenChart()">✕</button>
+          </div>
+          <div style="padding:40px 0; text-align:center; color:var(--text-muted);">Недостаточно точек для построения графика</div>
+        `;
+        return;
+      }
+
+      const vals = points.map(p => p.val);
+      const minVal = Math.min(...vals);
+      const maxVal = Math.max(...vals);
+      const avgVal = vals.reduce((a, b) => a + b, 0) / vals.length;
+      const lastVal = vals[vals.length - 1];
+
+      const rawSpan = maxVal - minVal;
+      const pad = rawSpan < 0.8 ? 0.5 : rawSpan * 0.12;
+      const yMin = minVal - pad;
+      const yMax = maxVal + pad;
+      const yRange = (yMax - yMin) || 1;
+
+      const W = 680, H = 310;
+      const padL = 54, padR = 18, padT = 18, padB = 34;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+
+      // Горизонтальные линии сетки и подписи оси Y (5 уровней)
+      let gridHtml = '';
+      const ySteps = 4;
+      for (let i = 0; i <= ySteps; i++) {
+        const ratio = i / ySteps;
+        const y = padT + ratio * plotH;
+        const val = yMax - ratio * yRange;
+        gridHtml += `
+          <line x1="${padL}" y1="${y.toFixed(1)}" x2="${W - padR}" y2="${y.toFixed(1)}" stroke="#e2e8f0" stroke-dasharray="4 4" stroke-width="1" />
+          <text x="${padL - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="#64748b" font-weight="600">
+            ${val.toFixed(1)}${meta.unit.trim()}
+          </text>
+        `;
+      }
+
+      // Вертикальные линии сетки и подписи времени по оси X
+      const xSteps = Math.min(5, Math.max(1, points.length - 1));
+      for (let i = 0; i <= xSteps; i++) {
+        const idx = Math.round((i / xSteps) * (points.length - 1));
+        const x = points.length === 1 ? padL + plotW / 2 : padL + (idx / (points.length - 1)) * plotW;
+        const timeStr = formatTimeHhMm(points[idx]?.ts);
+        gridHtml += `
+          <line x1="${x.toFixed(1)}" y1="${padT}" x2="${x.toFixed(1)}" y2="${padT + plotH}" stroke="#f1f5f9" stroke-width="1" />
+          <text x="${x.toFixed(1)}" y="${H - 10}" text-anchor="middle" font-size="11" fill="#64748b" font-weight="600">
+            ${timeStr}
+          </text>
+        `;
+      }
+
+      // Координаты кривой и точек
+      const ptsCoords = points.map((p, idx) => {
+        const x = points.length === 1 ? padL + plotW / 2 : padL + (idx / (points.length - 1)) * plotW;
+        const y = padT + plotH - ((p.val - yMin) / yRange) * plotH;
+        return { x, y, val: p.val, ts: p.ts };
+      });
+
+      const polyPoints = ptsCoords.map(c => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' ');
+      const firstX = ptsCoords[0].x.toFixed(1);
+      const lastX = ptsCoords[ptsCoords.length - 1].x.toFixed(1);
+      const baseLineY = (padT + plotH).toFixed(1);
+      const areaPoints = `${firstX},${baseLineY} ${polyPoints} ${lastX},${baseLineY}`;
+
+      const circlesHtml = ptsCoords.map(c => `
+        <circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3.2" fill="#ffffff" stroke="${meta.color}" stroke-width="2">
+          <title>${formatTimeHhMm(c.ts)} — ${c.val.toFixed(1)}${meta.unit}</title>
+        </circle>
+      `).join('');
+
+      const switcherHtml = availableKeys.length > 1 ? `
+        <div class="mode-pills" style="margin-bottom:12px;">
+          ${availableKeys.map(k => `
+            <button class="mode-pill ${k === activeKey ? 'active' : ''}" onclick="openFullscreenChart('${deviceId}', '${k}')">
+              ${seriesMeta[k].label}
+            </button>
+          `).join('')}
+        </div>
+      ` : '';
+
+      box.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+          <div>
+            <h3 style="margin:0; font-size:17px;">${d ? (d.name || d.device_id) : ''} — ${meta.label}</h3>
+            <div style="font-size:12px; color:var(--text-muted);">Точек в выборке: ${points.length}</div>
+          </div>
+          <button class="icon-btn" onclick="closeFullscreenChart()">✕</button>
+        </div>
+
+        ${switcherHtml}
+
+        <div class="fs-stats-row">
+          <div class="fs-stat-item">
+            <div class="fs-stat-lbl">ТЕКУЩЕЕ</div>
+            <div class="fs-stat-val" style="color:${meta.color};">${lastVal.toFixed(1)}${meta.unit}</div>
+          </div>
+          <div class="fs-stat-item">
+            <div class="fs-stat-lbl">МИНИМУМ</div>
+            <div class="fs-stat-val">${minVal.toFixed(1)}${meta.unit}</div>
+          </div>
+          <div class="fs-stat-item">
+            <div class="fs-stat-lbl">СРЕДНЕЕ</div>
+            <div class="fs-stat-val">${avgVal.toFixed(1)}${meta.unit}</div>
+          </div>
+          <div class="fs-stat-item">
+            <div class="fs-stat-lbl">МАКСИМУМ</div>
+            <div class="fs-stat-val">${maxVal.toFixed(1)}${meta.unit}</div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-subtle); border:1px solid var(--border); border-radius:12px; padding:8px;">
+          <svg viewBox="0 0 ${W} ${H}" width="100%" height="auto" style="display:block;">
+            <defs>
+              <linearGradient id="fsGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${meta.color}" stop-opacity="0.24"/>
+                <stop offset="100%" stop-color="${meta.color}" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+            <rect x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="#ffffff" rx="4" stroke="#e2e8f0" stroke-width="1" />
+            ${gridHtml}
+            <polygon points="${areaPoints}" fill="url(#fsGrad)" />
+            <polyline fill="none" stroke="${meta.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${polyPoints}" />
+            ${circlesHtml}
+          </svg>
+        </div>
+      `;
+    }
+
+    function renderSparklineSvg(deviceId, metricKey, points, label, unit, color) {
+      if (!points || points.length === 0) return '';
+      const vals = points.map(p => p.val);
+      const min = Math.min(...vals);
+      const max = Math.max(...vals);
+      const range = (max - min) < 0.5 ? 1.0 : (max - min);
+      const width = 300, height = 42;
+      const coords = points.map((p, idx) => {
+        const x = points.length === 1 ? width / 2 : (idx / (points.length - 1)) * width;
+        const y = height - 6 - ((p.val - min) / range) * (height - 12);
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(' ');
+
+      return `<div class="chart-box" onclick="openFullscreenChart('${deviceId}', '${metricKey}')" title="Открыть график на весь экран">
+        <div class="chart-title">
+          <span>${label}</span>
+          <span style="color:${color};">${min.toFixed(1)}${unit} .. ${max.toFixed(1)}${unit} ⤢</span>
+        </div>
+        <svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}">
+          <polyline fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" points="${coords}" />
+        </svg>
+      </div>`;
+    }
+
+    // ========================================================================
+    // ДЕТАЛЬНАЯ ШТОРКА УСТРОЙСТВА
+    // ========================================================================
+
+    function openDeviceSheet(deviceId) {
+      activeDeviceId = deviceId;
+      document.getElementById('device-sheet').classList.remove('hidden');
+      renderDeviceSheetContent();
+    }
+
+    function closeDeviceSheet() {
+      activeDeviceId = null;
+      document.getElementById('device-sheet').classList.add('hidden');
+    }
+
+    function renderDeviceSheetContent() {
+      if (!activeDeviceId) return;
+      if (document.querySelector('#device-sheet-content details[open]')) return;
+
+      const d = allDevices.find(x => x.device_id === activeDeviceId);
+      if (!d) {
+        closeDeviceSheet();
+        return;
+      }
+
+      const box = document.getElementById('device-sheet-content');
+      const hasKey = isDeviceKeyValid(d);
+      const customGroups = getProfileGroups();
+      const currentGroup = getDeviceGroup(d);
+
+      const statusText = d.ip ? `LAN ${d.ip}` : (d.online ? 'Онлайн (Облако)' : 'Не в сети');
+
+      if (!hasKey) {
+        box.innerHTML = `
+          <div class="sheet-handle"></div>
+          <div class="sheet-header">
+            <div>
+              <h3 style="margin:0; font-size:17px;">${d.name || d.device_id}</h3>
+              <div style="font-size:12px; color:var(--text-muted);">${statusText}</div>
+            </div>
+            <button class="icon-btn" onclick="closeDeviceSheet()">✕</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <input type="text" id="edit_name_${d.device_id}" value="${d.name || ''}" placeholder="Название устройства" />
+            <input type="text" id="edit_key_${d.device_id}" value="${d.local_key || ''}" placeholder="Ключ (Local Key / devicekey)" />
+            <div style="display:flex; gap:8px; margin-top:4px;">
+              <button class="btn" style="flex:1;" onclick="saveDeviceManualKey('${d.device_id}')">Сохранить</button>
+              <button class="btn btn-danger" onclick="deleteDevice('${d.device_id}', '${d.name || d.device_id}')">Удалить</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const items = Array.isArray(d.status) ? d.status : [];
+      const isThermostat = d.category === 'wk';
+      const isSwitch = d.category === 'kg' || d.category === 'cz';
+
+      let heroHtml = '';
+      if (isThermostat) {
+        const floorItem = items.find(i => i.code === 'temp_floor' || i.code === 'floor_temp' || i.dp_id === 101);
+        const airItem = items.find(i => i.code === 'temp_current' || i.code === 'air_temp' || i.dp_id === 24);
+        if (floorItem || airItem) {
+          heroHtml = `<div class="hero-grid">
+            <div class="hero-metric">
+              <div class="hero-label">Температура пола</div>
+              <div class="hero-val" style="color:var(--primary);">${floorItem ? (floorItem.value / 10).toFixed(1) + ' °C' : '—'}</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-label">Воздух</div>
+              <div class="hero-val">${airItem ? (airItem.value / 10).toFixed(1) + ' °C' : '—'}</div>
+            </div>
+          </div>`;
+        }
+      } else if (isSwitch) {
+        const pwrItem = items.find(i => i.code === 'cur_power' || i.dp_id === 23);
+        const voltItem = items.find(i => i.code === 'cur_voltage' || i.dp_id === 22);
+        if (pwrItem || voltItem) {
+          heroHtml = `<div class="hero-grid">
+            <div class="hero-metric">
+              <div class="hero-label">Мощность</div>
+              <div class="hero-val" style="color:var(--success);">${pwrItem ? (pwrItem.value / 10).toFixed(1) + ' Вт' : '0.0 Вт'}</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-label">Напряжение</div>
+              <div class="hero-val">${voltItem ? (voltItem.value / 10).toFixed(1) + ' В' : '—'}</div>
+            </div>
+          </div>`;
+        }
+      } else {
+        const tempItem = items.find(i => i.code === 'temp_current' || i.code === 'va_temperature' || i.dp_id === 102);
+        const humItem = items.find(i => i.code === 'humidity_value' || i.code === 'va_humidity' || i.dp_id === 103);
+        if (tempItem) {
+          const tVal = tempItem.value > 55 ? (tempItem.value / 10).toFixed(1) : Number(tempItem.value).toFixed(1);
+          const hVal = humItem ? (humItem.value > 100 ? (humItem.value / 10).toFixed(0) : humItem.value) : '—';
+          heroHtml = `<div class="hero-grid">
+            <div class="hero-metric">
+              <div class="hero-label">Температура</div>
+              <div class="hero-val" style="color:var(--primary);">${tVal} °C</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-label">Влажность</div>
+              <div class="hero-val" style="color:#0284c7;">${hVal}${hVal === '—' ? '' : ' %'}</div>
+            </div>
+          </div>`;
+        }
+      }
+
+      // Проверяем масштаб терморегулятора (по temp_set или upper_temp)
+      const scaleProbe = items.find(i => (i.code === 'temp_set' || i.code === 'upper_temp') && typeof i.value === 'number' && i.value > 55);
+      const isTenScaled = Boolean(scaleProbe || isThermostat);
+
+      const visibleItems = items.filter(i => {
+        if (HIDDEN_CODES.has(i.code)) return false;
+        if (isThermostat && (i.dp_id === 101 || i.dp_id === 24 || i.dp_id === 39 || i.dp_id === 104 || i.dp_id === 52 || i.dp_id === 108)) return false;
+        if (isSwitch && (i.dp_id === 22 || i.dp_id === 23 || i.dp_id === 24)) return false;
+        if (!isThermostat && !isSwitch && (i.dp_id === 102 || i.dp_id === 103)) return false;
+        return true;
+      });
+
+      const rowsHtml = visibleItems.map(item => {
+        const code = item.code;
+        const val = item.value;
+        const dpId = item.dp_id || 0;
+        const label = CODE_LABELS[code] || code;
+
+        // 1. Все булевы переключатели (Питание, Защита от детей, Антизамерзание, Подсветка)
+        if (typeof val === 'boolean') {
+          return `<div class="prop-row">
+            <span class="prop-name">${label}</span>
+            <label class="switch">
+              <input type="checkbox" ${val ? 'checked' : ''} onchange="sendCommand('${d.device_id}', '${code}', ${dpId}, this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>`;
+        }
+
+        // 2. Режим работы термостата (Ручной / Авто)
+        if (code === 'mode' || (isThermostat && dpId === 2)) {
+          return `<div class="prop-row">
+            <span class="prop-name">${label}</span>
+            <div class="mode-pills">
+              <button class="mode-pill ${val === 'manual' ? 'active' : ''}" onclick="sendCommand('${d.device_id}', 'mode', 2, 'manual')">Ручной</button>
+              <button class="mode-pill ${val === 'auto' ? 'active' : ''}" onclick="sendCommand('${d.device_id}', 'mode', 2, 'auto')">Авто</button>
+            </div>
+          </div>`;
+        }
+
+        // 3. Выбор активного датчика теплого пола (Воздух IN / Пол OUT / Оба ALL)
+        if (code === 'sensor_choose' || dpId === 43) {
+          return `<div class="prop-row">
+            <span class="prop-name">${label}</span>
+            <div class="mode-pills">
+              <button class="mode-pill ${val === 'in' ? 'active' : ''}" onclick="sendCommand('${d.device_id}', 'sensor_choose', 43, 'in')">Воздух</button>
+              <button class="mode-pill ${val === 'out' ? 'active' : ''}" onclick="sendCommand('${d.device_id}', 'sensor_choose', 43, 'out')">Пол</button>
+              <button class="mode-pill ${val === 'all' ? 'active' : ''}" onclick="sendCommand('${d.device_id}', 'sensor_choose', 43, 'all')">Оба</button>
+            </div>
+          </div>`;
+        }
+
+        // 4. Память питания после отключения света
+        if (code === 'relay_status' || dpId === 14) {
+          return `<div class="prop-row">
+            <span class="prop-name">${label}</span>
+            <div class="mode-pills">
+              <button class="mode-pill ${val === 'off' || val === 'power_off' ? 'active' : ''}" onclick="sendCommand('${d.device_id}', 'relay_status', 14, 'off')">Выкл</button>
+              <button class="mode-pill ${val === 'on' || val === 'power_on' ? 'active' : ''}" onclick="sendCommand('${d.device_id}', 'relay_status', 14, 'on')">Вкл</button>
+              <button class="mode-pill ${val === 'memory' || val === 'last' ? 'active' : ''}" onclick="sendCommand('${d.device_id}', 'relay_status', 14, 'memory')">Прежнее сост.</button>
+            </div>
+          </div>`;
+        }
+
+        // 5. Целевая температура (Уставка, DP 16)
+        if ((code === 'temp_set' || (isThermostat && dpId === 16)) && typeof val === 'number') {
+          const isScaled = val > 50 || isTenScaled;
+          const displayTemp = isScaled ? (val / 10).toFixed(1) : val.toFixed(1);
+          const step = isScaled ? 5 : 1;
+          return `<div class="prop-row">
+            <span class="prop-name">${label}</span>
+            <div class="stepper">
+              <button class="step-btn" onclick="sendCommand('${d.device_id}', 'temp_set', ${dpId || 16}, ${val - step})">−</button>
+              <span style="min-width:58px; text-align:center; font-weight:700;">${displayTemp} °C</span>
+              <button class="step-btn" onclick="sendCommand('${d.device_id}', 'temp_set', ${dpId || 16}, ${val + step})">+</button>
+            </div>
+          </div>`;
+        }
+
+        // 6. Лимит нагрева пола (upper_temp, DP 19) — интерактивный степпер
+        if ((code === 'upper_temp' || dpId === 19) && typeof val === 'number') {
+          const isScaled = val > 55 || isTenScaled;
+          const displayTemp = isScaled ? (val / 10).toFixed(1) : val.toFixed(1);
+          const step = isScaled ? 10 : 1;
+          return `<div class="prop-row">
+            <span class="prop-name">${label}</span>
+            <div class="stepper">
+              <button class="step-btn" onclick="sendCommand('${d.device_id}', 'upper_temp', ${dpId || 19}, ${val - step})">−</button>
+              <span style="min-width:58px; text-align:center; font-weight:700;">${displayTemp} °C</span>
+              <button class="step-btn" onclick="sendCommand('${d.device_id}', 'upper_temp', ${dpId || 19}, ${val + step})">+</button>
+            </div>
+          </div>`;
+        }
+
+        // 7. Гистерезис включения (temp_differ_on, DP 106) — интерактивный степпер (шаг 0.5 °C)
+        if ((code === 'temp_differ_on' || dpId === 106) && typeof val === 'number') {
+          const isScaled = val >= 5 || isTenScaled;
+          const displayDiff = isScaled ? (val / 10).toFixed(1) : val.toFixed(1);
+          const step = isScaled ? 5 : 0.5;
+          const nextDown = Math.max(isScaled ? 5 : 0.5, val - step);
+          const nextUp = Math.min(isScaled ? 50 : 5, val + step);
+          return `<div class="prop-row">
+            <span class="prop-name">${label}</span>
+            <div class="stepper">
+              <button class="step-btn" onclick="sendCommand('${d.device_id}', 'temp_differ_on', ${dpId || 106}, ${nextDown})">−</button>
+              <span style="min-width:58px; text-align:center; font-weight:700;">${displayDiff} °C</span>
+              <button class="step-btn" onclick="sendCommand('${d.device_id}', 'temp_differ_on', ${dpId || 106}, ${nextUp})">+</button>
+            </div>
+          </div>`;
+        }
+
+        let formatted = val;
+        if (code === 'valve_state' || code === 'work_state' || dpId === 36) {
+          formatted = val === 'open' ? '<span style="color:var(--warning);">Нагрев</span>' : '<span style="color:var(--text-muted);">Ожидание</span>';
+        } else if (code === 'cur_current' || dpId === 21) {
+          formatted = val + ' мА';
+        } else if (code === 'add_ele' && typeof val === 'number') {
+          formatted = (val / 100).toFixed(2) + ' кВт·ч';
+        } else if (code === 'battery_state') {
+          formatted = val === 'high' ? 'Высокий' : (val === 'middle' ? 'Средний' : 'Низкий');
+        }
+
+        return `<div class="prop-row">
+          <span class="prop-name">${label}</span>
+          <span class="prop-val">${formatted}</span>
+        </div>`;
+      }).join('');
+
+      const h = historyCache[d.device_id] || {};
+      let chartHtml = '';
+      if (isThermostat && h.floor_temp && h.floor_temp.length > 0) {
+        chartHtml = renderSparklineSvg(d.device_id, 'floor_temp', h.floor_temp, 'История температуры пола (нажмите для деталей)', '°C', '#2563eb');
+      } else if (isSwitch && h.power_w && h.power_w.length > 0) {
+        chartHtml = renderSparklineSvg(d.device_id, 'power_w', h.power_w, 'История мощности (нажмите для деталей)', ' Вт', '#16a34a');
+      } else if (h.temp && h.temp.length > 0) {
+        chartHtml = renderSparklineSvg(d.device_id, 'temp', h.temp, 'История температуры (нажмите для деталей)', '°C', '#2563eb');
+      }
+
+      const groupOptions = [
+        `<option value="">Без группы</option>`,
+        ...customGroups.map(g => `<option value="${g}" ${currentGroup === g ? 'selected' : ''}>${g}</option>`)
+      ].join('');
+
+      box.innerHTML = `
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 style="margin:0; font-size:18px;">${d.name || d.device_id}</h3>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${statusText}</div>
+          </div>
+          <button class="icon-btn" onclick="closeDeviceSheet()">✕</button>
+        </div>
+
+        ${heroHtml}
+        ${rowsHtml ? `<div class="controls-list">${rowsHtml}</div>` : ''}
+        ${chartHtml}
+
+        <div class="controls-list" style="margin-bottom:12px;">
+          <div class="prop-row">
+            <span class="prop-name">Группа</span>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <select onchange="setDeviceGroup('${d.device_id}', this.value)" style="padding:5px 8px; font-size:13px;">
+                ${groupOptions}
+              </select>
+              <button class="icon-btn" onclick="promptCreateGroup()" title="Создать группу">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-ghost" style="flex:1;" onclick="refreshSingleDevice('${d.device_id}')">Обновить</button>
+        </div>
+
+        <details style="margin-top:12px;">
+          <summary style="cursor:pointer; font-size:12px; color:var(--text-muted);">Параметры устройства</summary>
+          <div style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
+            <input type="text" id="edit_name_${d.device_id}" value="${d.name || ''}" placeholder="Название" />
+            <input type="text" id="edit_key_${d.device_id}" value="${d.local_key || ''}" placeholder="Ключ" />
+            <div style="display:flex; gap:6px;">
+              <button class="btn" style="flex:1;" onclick="saveDeviceManualKey('${d.device_id}')">Сохранить</button>
+              <button class="btn btn-danger" onclick="deleteDevice('${d.device_id}', '${d.name || d.device_id}')">Удалить</button>
+            </div>
+          </div>
+        </details>
+      `;
+    }
+
+    // ========================================================================
+    // ДЕЙСТВИЯ И ПРОФИЛИ
+    // ========================================================================
+
+    async function scanLanNow() {
+      showToast('Поиск в сети...');
+      const res = await safeFetchJson('/api/scan/lan', { method: 'POST' });
+      await loadAllData(false);
+      showToast(`Найдено: ${res.lan_count}`);
+    }
+
+    async function saveDeviceManualKey(id) {
+      const nameEl = document.getElementById('edit_name_' + id);
+      const keyEl = document.getElementById('edit_key_' + id);
+      const name = nameEl ? nameEl.value.trim() : '';
+      const local_key = keyEl ? keyEl.value.trim() : '';
+
+      const res = await safeFetchJson(`/api/devices/${id}/key`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name, category: null, local_key })
+      });
+      if (res.ok) {
+        showToast('Сохранено');
+        await refreshSingleDevice(id);
+      }
+    }
+
+    async function sendCommand(id, code, dp_id, value) {
+      isInteracting = true;
+      try {
+        const res = await safeFetchJson(`/api/devices/${id}/control`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ code, dp_id: dp_id || null, value })
+        });
+        if (!res.ok) showToast(res.error);
+      } catch (e) {
+        showToast(e.message);
+      }
+      isInteracting = false;
+      await loadAllData(false);
+    }
+
+    async function refreshSingleDevice(id) {
+      const res = await safeFetchJson(`/api/devices/${id}/status`);
+      if (res.ok) showToast('Обновлено');
+      await loadAllData(false);
+    }
+
+    async function deleteDevice(id, name) {
+      if (!confirm(`Удалить «${name}»?`)) return;
+      await safeFetchJson(`/api/devices/${id}`, { method: 'DELETE' });
+      delete cameraSnapshotsCache[id];
+      if (activeDeviceId === id) closeDeviceSheet();
+      await loadAllData(false);
+    }
+
+    async function onProfileSelectChange(newProfId) {
+      currentGroupFilter = 'all';
+      closeDeviceSheet();
+      closeFullscreenChart();
+      await safeFetchJson('/api/profiles/switch', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ profile_id: newProfId })
+      });
+      await loadAllData(false);
+      await loadRemoteConfigUi();
+    }
+
+    function openProfilesModal() {
+      renderProfilesModalList();
+      document.getElementById('profiles-modal').classList.remove('hidden');
+    }
+
+    function closeProfilesModal() {
+      document.getElementById('profiles-modal').classList.add('hidden');
+    }
+
+    function renderProfilesModalList() {
+      const box = document.getElementById('modal-profiles-list');
+      box.innerHTML = (profilesData.profiles || []).map(p => `
+        <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+          <input type="text" id="profname_${p.id}" value="${p.name}" style="flex:1;" />
+          <button class="btn btn-ghost" style="padding:6px 10px;" onclick="renameProfile('${p.id}')">✓</button>
+          <button class="btn btn-danger" style="padding:6px 10px;" onclick="deleteProfile('${p.id}', '${p.name}')">✕</button>
+        </div>
+      `).join('');
+
+      const gBox = document.getElementById('modal-groups-list');
+      const groups = getProfileGroups();
+      gBox.innerHTML = groups.length === 0
+        ? `<div style="font-size:12.5px; color:var(--text-muted);">Группы еще не созданы</div>`
+        : groups.map(g => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:var(--bg-subtle); border-radius:8px; margin-bottom:6px; font-size:13px; font-weight:600;">
+            <span>${g}</span>
+            <button class="btn btn-danger" style="padding:3px 8px; font-size:11px;" onclick="deleteGroup('${g}')">Удалить</button>
+          </div>
+        `).join('');
+    }
+
+    async function createNewProfile() {
+      const id = document.getElementById('new-prof-id').value.trim();
+      const name = document.getElementById('new-prof-name').value.trim();
+      if (!id || !name) return showToast('Укажите ID и название');
+
+      const res = await safeFetchJson('/api/profiles', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ id, name })
+      });
+      if (!res.ok) return showToast(res.error);
+
+      document.getElementById('new-prof-id').value = '';
+      document.getElementById('new-prof-name').value = '';
+      await loadAllData(false);
+      renderProfilesModalList();
+    }
+
+    async function renameProfile(id) {
+      const name = document.getElementById('profname_' + id).value.trim();
+      const res = await safeFetchJson(`/api/profiles/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name })
+      });
+      if (res.ok) {
+        await loadAllData(false);
+        renderProfilesModalList();
+      }
+    }
+
+    async function deleteProfile(id, name) {
+      if (!confirm(`Удалить профиль «${name}»?`)) return;
+      const res = await safeFetchJson(`/api/profiles/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        await loadAllData(false);
+        renderProfilesModalList();
+      }
+    }
+
+    // ========================================================================
+    // КАМЕРЫ
+    // ========================================================================
+
+    async function addCameraManually() {
+      const ip = document.getElementById('add-cam-ip').value.trim();
+      const name = document.getElementById('add-cam-name').value.trim();
+      const preset = document.getElementById('add-cam-preset').value;
+      const username = document.getElementById('add-cam-user').value.trim() || 'admin';
+      const password = document.getElementById('add-cam-pass').value.trim();
+
+      if (!ip) return showToast('Введите IP-адрес');
+
+      const res = await safeFetchJson('/api/cameras/add', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ ip, name: name || null, preset, username, password })
+      });
+
+      if (res.ok) {
+        document.getElementById('add-cam-ip').value = '';
+        document.getElementById('add-cam-name').value = '';
+        document.getElementById('add-cam-box').classList.add('hidden');
+        await loadAllData(false);
+        await refreshCameraSnapshot(res.device_id, true);
+      } else {
+        showToast(res.error);
+      }
+    }
+
+    async function saveCameraSettings(id) {
+      const name = document.getElementById('cam_name_' + id)?.value.trim() || '';
+      const preset = document.getElementById('cam_preset_' + id)?.value || 'ipw_onvif';
+      const username = document.getElementById('cam_user_' + id)?.value.trim() || 'admin';
+      const password = document.getElementById('cam_pass_' + id)?.value.trim() || '';
+      const rtsp_port = parseInt(document.getElementById('cam_port_' + id)?.value || '554', 10) || 554;
+      const stream_quality = document.getElementById('cam_qual_' + id)?.value || 'sub';
+      const custom_url = document.getElementById('cam_url_' + id)?.value.trim() || '';
+      const detect_enabled = document.getElementById('cam_det_' + id)?.checked || false;
+      const sensitivity = parseFloat(document.getElementById('cam_sens_' + id)?.value || '1.5') || 1.5;
+
+      const res = await safeFetchJson(`/api/cameras/${id}/config`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          name: name || null,
+          preset,
+          username,
+          password,
+          rtsp_port,
+          stream_quality,
+          custom_url,
+          detect_enabled,
+          sensitivity
+        })
+      });
+
+      if (res.ok) {
+        showToast('Сохранено');
+        await loadAllData(false);
+        await refreshCameraSnapshot(id, true);
+      } else {
+        showToast(res.error);
+      }
+    }
+
+    async function toggleCameraDetectionQuick(id, enabled) {
+      const cam = allDevices.find(d => d.device_id === id);
+      if (!cam) return;
+      const m = cam.metadata || {};
+
+      await safeFetchJson(`/api/cameras/${id}/config`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          name: cam.name || null,
+          preset: m.preset || 'ipw_onvif',
+          username: m.username || 'admin',
+          password: cam.local_key || '',
+          rtsp_port: m.rtsp_port || 554,
+          stream_quality: m.stream_quality || 'sub',
+          custom_url: m.custom_url || '',
+          detect_enabled: enabled,
+          sensitivity: m.sensitivity || 1.5
+        })
+      });
+
+      await loadAllData(false);
+      if (enabled) await refreshCameraSnapshot(id, true);
+    }
+
+    async function refreshCameraSnapshot(id, force = true) {
+      try {
+        const snap = await safeFetchJson(`/api/cameras/${id}/snapshot`, {
+          method: force ? 'POST' : 'GET'
+        });
+        cameraSnapshotsCache[id] = snap;
+        renderCamerasTab();
+      } catch (e) {
+        if (force) showToast(e.message);
+      }
+    }
+
+    async function refreshAllCameras(showNotice = true) {
+      const cams = allDevices.filter(d => String(d.vendor).startsWith('Camera'));
+      if (cams.length === 0) return;
+      if (showNotice) showToast('Обновление кадров...');
+      await Promise.all(cams.map(c => refreshCameraSnapshot(c.device_id, false)));
+    }
+
+    function toggleMotionSnapshotView(id) {
+      showMotionEventView[id] = !showMotionEventView[id];
+      renderCamerasTab();
+    }
+
+    function renderCamerasTab() {
+      const cams = allDevices.filter(d => String(d.vendor).startsWith('Camera'));
+      const countEl = document.getElementById('cameras-count');
+      if (countEl) countEl.innerText = cams.length;
+
+      if (document.querySelector('#tab-cameras details.cam-cfg-spoiler[open]')) return;
+
+      const grid = document.getElementById('cameras-grid');
+      if (!grid) return;
+
+      if (cams.length === 0) {
+        grid.innerHTML = `<div class="panel-box" style="grid-column: 1 / -1; text-align:center; color:var(--text-muted);">
+          Нет добавленных камер
+        </div>`;
+        return;
+      }
+
+      grid.innerHTML = cams.map(c => {
+        const m = c.metadata || {};
+        const snap = cameraSnapshotsCache[c.device_id] || {};
+        const preset = m.preset || (c.vendor === 'CameraICSee' ? 'icsee' : (c.vendor === 'CameraV380' ? 'v380' : 'ipw_onvif'));
+        const presetLabel = CAMERA_PRESET_NAMES[preset] || preset;
+        const detectEnabled = Boolean(m.detect_enabled);
+        const motionScore = snap.motion_score ?? m.motion_score ?? 0;
+        const motionBox = snap.motion_box || m.motion_box || null;
+        const lastMotionTime = snap.last_motion_time || '—';
+        const errText = snap.error || m.last_error || null;
+
+        const isEventView = Boolean(showMotionEventView[c.device_id] && snap.last_motion_image_b64);
+        const imgSrc = isEventView ? snap.last_motion_image_b64 : snap.image_b64;
+
+        const bboxHtml = (!isEventView && motionBox && imgSrc) ? `
+          <div class="motion-bbox" style="left:${motionBox.x}%; top:${motionBox.y}%; width:${motionBox.w}%; height:${motionBox.h}%;"></div>
+        ` : '';
+
+        const viewportContent = imgSrc
+          ? `<img src="${imgSrc}" alt="" />
+             ${bboxHtml}
+             <div class="cam-overlay-bar">
+               <span class="cam-pill">${isEventView ? lastMotionTime : presetLabel}</span>
+               ${motionScore > 0 ? `<span class="cam-pill">${motionScore}%</span>` : ''}
+             </div>`
+          : `<div class="cam-placeholder">${errText || 'Нет кадра'}</div>`;
+
+        return `<div class="panel-box" style="margin-bottom:0;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:700; font-size:15px;">${c.name || c.ip || c.device_id}</div>
+            <span style="font-size:12px; color:var(--text-muted);">${c.ip || ''}</span>
+          </div>
+
+          <div class="cam-viewport">${viewportContent}</div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:13px;">
+            <span>Детекция движения (${lastMotionTime})</span>
+            <label class="switch">
+              <input type="checkbox" ${detectEnabled ? 'checked' : ''} onchange="toggleCameraDetectionQuick('${c.device_id}', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-ghost" style="flex:1;" onclick="refreshCameraSnapshot('${c.device_id}', true)">Кадр</button>
+            ${snap.last_motion_image_b64 ? `
+              <button class="btn ${isEventView ? '' : 'btn-ghost'}" onclick="toggleMotionSnapshotView('${c.device_id}')">
+                ${isEventView ? 'Поток' : 'Событие'}
+              </button>
+            ` : ''}
+          </div>
+
+          <details class="cam-cfg-spoiler" style="margin-top:10px;">
+            <summary style="cursor:pointer; font-size:12px; color:var(--text-muted);">Настройки</summary>
+            <div style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
+              <input type="text" id="cam_name_${c.device_id}" value="${c.name || ''}" placeholder="Название" />
+              <select id="cam_preset_${c.device_id}">
+                <option value="ipw_onvif" ${preset === 'ipw_onvif' ? 'selected' : ''}>ONVIF / RTSP</option>
+                <option value="icsee" ${preset === 'icsee' ? 'selected' : ''}>iCSee / XMEye</option>
+                <option value="v380" ${preset === 'v380' ? 'selected' : ''}>V380</option>
+                <option value="tapo_dahua" ${preset === 'tapo_dahua' ? 'selected' : ''}>Tapo / Dahua</option>
+                <option value="custom" ${preset === 'custom' ? 'selected' : ''}>Свой URL</option>
+              </select>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id="cam_user_${c.device_id}" value="${m.username || 'admin'}" placeholder="Логин" style="flex:1;" />
+                <input type="password" id="cam_pass_${c.device_id}" value="${c.local_key || ''}" placeholder="Пароль" style="flex:1;" />
+                <input type="number" id="cam_port_${c.device_id}" value="${m.rtsp_port || 554}" style="width:68px;" />
+              </div>
+              <div style="display:flex; gap:6px;">
+                <select id="cam_qual_${c.device_id}" style="flex:1;">
+                  <option value="sub" ${(m.stream_quality || 'sub') === 'sub' ? 'selected' : ''}>Вторичный поток</option>
+                  <option value="main" ${m.stream_quality === 'main' ? 'selected' : ''}>Основной поток</option>
+                </select>
+                <input type="number" step="0.5" id="cam_sens_${c.device_id}" value="${m.sensitivity || 1.5}" style="width:75px;" />
+              </div>
+              <input type="text" id="cam_url_${c.device_id}" value="${m.custom_url || ''}" placeholder="rtsp://..." />
+              <input type="checkbox" id="cam_det_${c.device_id}" ${detectEnabled ? 'checked' : ''} class="hidden" />
+              <div style="display:flex; gap:6px;">
+                <button class="btn" style="flex:1;" onclick="saveCameraSettings('${c.device_id}')">Сохранить</button>
+                <button class="btn btn-danger" onclick="deleteDevice('${c.device_id}', '${c.name || c.device_id}')">Удалить</button>
+              </div>
+            </div>
+          </details>
+        </div>`;
+      }).join('');
+    }
+
+    // ========================================================================
+    // АВТОМАТИЗАЦИЯ И СЕТЬ
+    // ========================================================================
+
+    function onRuleTypeChange() {
+      const t = document.getElementById('rule-type').value;
+      document.getElementById('box-trigger-dev').classList.toggle('hidden', t === 'schedule');
+      document.getElementById('box-trigger-metric').classList.toggle('hidden', t === 'schedule');
+      document.getElementById('box-schedule-time').classList.toggle('hidden', t !== 'schedule');
+    }
+
+    function parseActionValue(rawStr) {
+      const s = String(rawStr).trim().toLowerCase();
+      if (s === 'true' || s === 'on' || s === 'вкл') return true;
+      if (s === 'false' || s === 'off' || s === 'выкл') return false;
+      const num = parseFloat(rawStr);
+      if (!isNaN(num)) return num;
+      return rawStr.trim();
+    }
+
+    async function testActionOnce() {
+      const action_device_id = document.getElementById('rule-act-dev').value;
+      const action_code = document.getElementById('rule-act-code').value;
+      let action_value = parseActionValue(document.getElementById('rule-act-val').value);
+      if (!action_device_id) return;
+      const dev = allDevices.find(d => d.device_id === action_device_id);
+      if (action_code === 'temp_set' && typeof action_value === 'number' && action_value <= 50 && dev?.category === 'wk') {
+        action_value = Math.round(action_value * 10);
+      }
+      await sendCommand(action_device_id, action_code, null, action_value);
+    }
+
+    async function saveCustomRule() {
+      const name = document.getElementById('rule-name').value.trim() || 'Правило';
+      const rule_type = document.getElementById('rule-type').value;
+      const trigger_device_id = document.getElementById('rule-trig-dev').value;
+      const trigger_metric = document.getElementById('rule-trig-metric').value;
+      const operator = document.getElementById('rule-op').value;
+      const threshold = parseFloat(document.getElementById('rule-thresh').value) || 2.0;
+      const schedule_time = document.getElementById('rule-time').value || '23:00';
+      const action_device_id = document.getElementById('rule-act-dev').value;
+      const action_code = document.getElementById('rule-act-code').value;
+      const action_value = parseActionValue(document.getElementById('rule-act-val').value);
+
+      if (!action_device_id) return;
+
+      await safeFetchJson('/api/automations', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          id: 0, profile_id: profilesData.active, name, enabled: true, rule_type,
+          trigger_device_id: trigger_device_id || action_device_id,
+          trigger_metric, operator, threshold, schedule_time,
+          action_device_id, action_code, action_value
+        })
+      });
+      await loadAllData(false);
+    }
+
+    async function toggleRule(id, enabled) {
+      await safeFetchJson(`/api/automations/${id}/toggle`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ enabled })
+      });
+      await loadAllData(false);
+    }
+
+    async function deleteRule(id) {
+      await safeFetchJson(`/api/automations/${id}`, { method: 'DELETE' });
+      await loadAllData(false);
+    }
+
+    function renderAutomationsTab() {
+      const rules = automationsData.rules || [];
+      const logs = automationsData.logs || [];
+      document.getElementById('rules-count').innerText = rules.length;
+
+      const trigSelect = document.getElementById('rule-trig-dev');
+      const actSelect = document.getElementById('rule-act-dev');
+      const smartDevs = allDevices.filter(d => !String(d.vendor).startsWith('Camera'));
+
+      if (trigSelect && trigSelect.options.length !== allDevices.length) {
+        trigSelect.innerHTML = allDevices.map(d => `<option value="${d.device_id}">${d.name || d.device_id}</option>`).join('');
+      }
+      if (actSelect && actSelect.options.length !== smartDevs.length) {
+        actSelect.innerHTML = smartDevs.map(d => `<option value="${d.device_id}">${d.name || d.device_id}</option>`).join('');
+      }
+
+      const listEl = document.getElementById('rules-list');
+      listEl.innerHTML = rules.map(r => {
+        const trigDev = allDevices.find(d => d.device_id === r.trigger_device_id)?.name || r.trigger_device_id;
+        const actDev = allDevices.find(d => d.device_id === r.action_device_id)?.name || r.action_device_id;
+        const condText = r.rule_type === 'schedule'
+          ? `В <b>${r.schedule_time}</b>`
+          : `<b>${trigDev}</b> ${r.operator === 'lt' ? '<' : '>'} ${r.threshold}`;
+
+        return `<div class="rule-row">
+          <div>
+            <div style="font-weight:700; font-size:14px;">${r.name}</div>
+            <div style="font-size:12px; color:var(--text-muted);">${condText} ➔ <b>${actDev}</b> (${r.action_value})</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label class="switch">
+              <input type="checkbox" ${r.enabled ? 'checked' : ''} onchange="toggleRule(${r.id}, this.checked)">
+              <span class="slider"></span>
+            </label>
+            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRule(${r.id})">✕</button>
+          </div>
+        </div>`;
+      }).join('');
+
+      const logsEl = document.getElementById('auto-logs-box');
+      if (logs.length > 0) {
+        logsEl.innerHTML = logs.map(l => `
+          <div style="padding:4px 0; border-bottom:1px solid var(--border);">
+            <b>[${l.time_str}] ${l.rule_name}:</b> ${l.message}
+          </div>
+        `).join('');
+      }
+    }
+
+    async function loadRemoteConfigUi() {
+      try {
+        remoteConfigData = await safeFetchJson('/api/remote/config');
+        const urlInput = document.getElementById('rem-vps-url');
+        if (urlInput && document.activeElement !== urlInput) {
+          urlInput.value = remoteConfigData.vps_url || '';
+        }
+        renderRemoteSummaryBox();
+      } catch (_) {}
+    }
+
+    function renderRemoteSummaryBox() {
+      const net = (profilesData && profilesData.network) || (remoteConfigData && remoteConfigData.network) || {};
+      const d = profilesData.diagnostics || {};
+      const hubId = (remoteConfigData && remoteConfigData.hub_id) || '';
+      const w = net.wifi || null;
+
+      const badgeEl = document.getElementById('hub-id-badge');
+      if (badgeEl) badgeEl.innerText = hubId;
+
+      const box = document.getElementById('remote-net-summary');
+      if (box) {
+        box.innerHTML = `
+          <div class="net-card">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700;">УСТРОЙСТВА И КЛЮЧИ</div>
+            <div style="font-size:13.5px; font-weight:700; margin-top:3px;">
+              В LAN: ${d.lan_devices || 0} из ${d.total_devices || 0} • Ключей: ${d.configured_keys || 0}
+            </div>
+          </div>
+          ${w ? `
+          <div class="net-card">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700;">WI-FI (${w.ssid})</div>
+            <div style="font-size:13.5px; font-weight:700; color:${w.quality_grade === 'good' ? 'var(--success)' : 'var(--warning)'}; margin-top:3px;">
+              ${w.verdict}
+            </div>
+          </div>` : ''}
+          <div class="net-card">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700;">STUN / P2P</div>
+            <div style="font-size:13.5px; font-weight:700; margin-top:3px;">${net.stun_public_endpoint || '—'}</div>
+          </div>
+          <div class="net-card">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700;">VPS КАНАЛ</div>
+            <div style="font-size:13.5px; font-weight:700; color:${net.vps_relay_connected ? 'var(--success)' : 'var(--warning)'}; margin-top:3px;">
+              ${net.vps_relay_connected ? 'Подключен' : 'Нет связи'}
+            </div>
+          </div>
+        `;
+      }
+
+      const cloudBox = document.getElementById('cloud-keys-status-box');
+      if (cloudBox) {
+        cloudBox.innerHTML = d.has_cloud_credentials
+          ? `<span style="color:var(--success); font-weight:600;">● Активно</span>`
+          : `<span style="color:var(--text-muted);">Не задано</span>`;
+      }
+
+      const ewBox = document.getElementById('ewelink-status-box');
+      if (ewBox) {
+        ewBox.innerHTML = d.has_ewelink_credentials
+          ? `<span style="color:var(--success); font-weight:600;">● Активно</span>`
+          : `<span style="color:var(--text-muted);">Не задано</span>`;
+      }
+    }
+
+    async function saveRemoteConfig() {
+      const vps_url = document.getElementById('rem-vps-url').value.trim();
+      const vps_secret = document.getElementById('rem-vps-secret').value.trim();
+      const pwdRaw = document.getElementById('rem-password').value.trim();
+
+      await safeFetchJson('/api/remote/config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          vps_url, vps_secret, new_password: pwdRaw ? pwdRaw : null,
+          stun_server: 'stun.cloudflare.com:3478', enabled: true
+        })
+      });
+
+      document.getElementById('rem-password').value = '';
+      document.getElementById('rem-vps-secret').value = '';
+      showToast('Сохранено');
+      await loadRemoteConfigUi();
+    }
+
+    async function syncOpenApi() {
+      const region = document.getElementById('region').value;
+      const access_id = document.getElementById('access_id').value.trim();
+      const access_secret = document.getElementById('access_secret').value.trim();
+      const statusEl = document.getElementById('sync-status');
+      statusEl.innerHTML = 'Синхронизация...';
+      const res = await safeFetchJson('/api/sync/openapi', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ region, access_id, access_secret })
+      });
+      statusEl.innerHTML = res.ok ? `Загружено: ${res.count}` : res.error;
+      await loadAllData(false);
+    }
+
+    async function syncEwelink() {
+      const region = document.getElementById('ew_region').value;
+      const login = document.getElementById('ew_login').value.trim();
+      const password = document.getElementById('ew_pass').value.trim();
+      const statusEl = document.getElementById('ew-sync-status');
+      if (!login || !password) return showToast('Введите логин и пароль');
+      statusEl.innerHTML = 'Подключение...';
+      const res = await safeFetchJson('/api/sync/ewelink', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ region, login, password })
+      });
+      statusEl.innerHTML = res.ok ? `Загружено: ${res.count}` : res.error;
+      await loadAllData(false);
+    }
+
+    async function resetDb(scope) {
+      if (!confirm('Подтвердить сброс?')) return;
+      await safeFetchJson('/api/db/reset', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ scope })
+      });
+      await loadAllData(false);
+    }
+
+    function renderAll() {
+      if (isInteracting) return;
+
+      const profSelect = document.getElementById('profile-select');
+      if (profSelect && profilesData.profiles && profilesData.profiles.length > 0) {
+        profSelect.innerHTML = profilesData.profiles.map(p =>
+          `<option value="${p.id}" ${p.id === profilesData.active ? 'selected' : ''}>${p.name}</option>`
+        ).join('');
+      }
+
+      renderDashboardGroupsAndTiles();
+      if (activeDeviceId) renderDeviceSheetContent();
+      if (fsChartState) renderFullscreenChartModal();
+      try { renderAutomationsTab(); } catch (_) {}
+      try { renderCamerasTab(); } catch (_) {}
+      try { renderRemoteSummaryBox(); } catch (_) {}
+    }
+
+    async function initAdaptiveSession() {
+      if (IS_TAURI) {
+        await refreshTauriRouteBadge();
+      } else {
+        try {
+          const ping = await fetch('/api/ping').then(r => r.json());
+          if (ping && ping.local_endpoint) {
+            await probeOptimalRoute(ping.local_endpoint, ping.hub_id);
+          }
+        } catch (_) {}
+      }
+      await loadRemoteConfigUi();
+      await loadAllData(false);
+    }
+
+    let knownLatestAutoLogKey = null;
+    let knownCameraMotionTimes = {};
+    let notificationsInitialized = false;
+
+    async function requestSystemNotificationPermission() {
+      try {
+        if (IS_TAURI && window.__TAURI__.plugin) {
+          await window.__TAURI__.core.invoke('plugin:notification|request_permission');
+        } else if ('Notification' in window && Notification.permission === 'default') {
+          await Notification.requestPermission();
+        }
+      } catch (_) {}
+    }
+
+    async function sendSystemNotification(title, body) {
+      showToast(`${title}: ${body}`);
+      try {
+        if (IS_TAURI) {
+          await window.__TAURI__.core.invoke('plugin:notification|notify', {
+            options: { title, body }
+          });
+          return;
+        }
+      } catch (_) {}
+
+      if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+          new Notification(title, { body });
+        } else if (Notification.permission === 'default') {
+          Notification.requestPermission().then(p => {
+            if (p === 'granted') new Notification(title, { body });
+          });
+        }
+      }
+    }
+
+    function checkAndFireNotifications() {
+      const logs = automationsData.logs || [];
+      const latestLog = logs[0];
+      const latestLogKey = latestLog ? `${latestLog.time_str}|${latestLog.rule_name}|${latestLog.message}` : null;
+
+      // При первом запуске запоминаем текущее состояние без спама старыми событиями
+      if (!notificationsInitialized) {
+        knownLatestAutoLogKey = latestLogKey;
+        allDevices.forEach(d => {
+          if (String(d.vendor).startsWith('Camera')) {
+            const snap = cameraSnapshotsCache[d.device_id] || {};
+            const mTime = snap.last_motion_time || (Array.isArray(d.status) && d.status.find(i => i.code === 'last_motion_time')?.value) || '';
+            if (mTime && mTime !== '—') knownCameraMotionTimes[d.device_id] = mTime;
+          }
+        });
+        notificationsInitialized = true;
+        requestSystemNotificationPermission();
+        return;
+      }
+
+      // 1. Новое срабатывание автоматики
+      if (latestLog && latestLogKey !== knownLatestAutoLogKey) {
+        knownLatestAutoLogKey = latestLogKey;
+        sendSystemNotification(`⚡ ${latestLog.rule_name}`, latestLog.message);
+      }
+
+      // 2. Детекция движения на любой камере
+      allDevices.forEach(d => {
+        if (!String(d.vendor).startsWith('Camera')) return;
+        const snap = cameraSnapshotsCache[d.device_id] || {};
+        const isDetected = Boolean(snap.motion_detected ?? d.metadata?.motion_detected);
+        const score = snap.motion_score ?? d.metadata?.motion_score ?? 0;
+        const mTime = snap.last_motion_time
+          || (Array.isArray(d.status) && d.status.find(i => i.code === 'last_motion_time')?.value)
+          || '';
+
+        if (isDetected && mTime && mTime !== '—' && knownCameraMotionTimes[d.device_id] !== mTime) {
+          knownCameraMotionTimes[d.device_id] = mTime;
+          sendSystemNotification(`📹 ${d.name || 'Камера'}`, `Движение в кадре (${score}%) в ${mTime}`);
+        }
+      });
+    }
+
+    async function loadAllData(manual = false) {
+      try {
+        const [prof, devs, auto] = await Promise.all([
+          safeFetchJson('/api/profiles'),
+          safeFetchJson('/api/devices'),
+          safeFetchJson('/api/automations')
+        ]);
+        profilesData = prof;
+        allDevices = devs;
+        automationsData = auto;
+
+        renderAll();
+
+        checkAndFireNotifications();
+
+        const smartDevs = allDevices.filter(d => !String(d.vendor).startsWith('Camera'));
+        await Promise.all(smartDevs.map(async (d) => {
+          try {
+            historyCache[d.device_id] = await safeFetchJson(`/api/devices/${d.device_id}/history`);
+          } catch (_) {}
+        }));
+
+        if (currentTab === 'cameras') await refreshAllCameras(false);
+        if (activeDeviceId) renderDeviceSheetContent();
+        if (fsChartState) renderFullscreenChartModal();
+        if (manual) showToast('Обновлено');
+      } catch (_) {}
+    }
+
+    initAdaptiveSession();
+    setInterval(() => loadAllData(false), 5000);
+  </script>
+</body>
+</html>
