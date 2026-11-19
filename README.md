@@ -342,26 +342,6 @@ DEFAULT_VPS_URL="https://smart-hub.example.com" cargo tauri android build --apk
 - В журналах пароли RTSP/HTTP маскируются, но сторонние библиотеки и `ffmpeg` могут писать свои сообщения.
 - Проверяйте APK и keystore: приватный ключ подписи не должен попадать в Git.
 
-### Что делать с уже утёкшими данными
-
-Файлы `devices_cache_*.json` и `smart_hub.db*` ранее находились под контролем Git. Они удалены из индекса, однако остаются в старых коммитах истории. Если репозиторий публикуется или передаётся третьим лицам:
-
-1. Считайте скомпрометированными все ключи из этих файлов.
-2. Перевыпустите `access_secret` Tuya OpenAPI и `EWELINK_APP_SECRET`.
-3. Смените локальные ключи устройств (перепривязка в приложении производителя) и пароль хаба.
-4. Смените `RELAY_SECRET` и пароли камер.
-5. При необходимости очистите историю с помощью `git filter-repo`:
-
-```bash
-# Сделайте резервную копию репозитория и согласуйте force-push с командой!
-git filter-repo --invert-paths \
-  --path smart_hub.db \
-  --path smart_hub.db-shm \
-  --path smart_hub.db-wal \
-  --path devices_cache_home.json \
-  --path devices_cache_dacha.json
-```
-
 ---
 
 ## Диагностика
